@@ -1,0 +1,485 @@
+﻿CREATE DATABASE QLCuaHangNike;
+GO
+
+USE QLCuaHangNike;
+GO
+--Yêu cầu 1: CSDL của đồ án chứa ít nhất 7 bảng (table), đáp ứng dạng chuẩn 3 trở lên :
+
+-- Bảng Loại Sản Phẩm
+CREATE TABLE LOAISP (
+    MaLSP VARCHAR(10) PRIMARY KEY,
+    TenLSP NVARCHAR(100) NOT NULL
+);
+
+-- Bảng Nhà Cung Cấp
+CREATE TABLE NHACUNGCAP (
+    MaNCC VARCHAR(10) PRIMARY KEY,
+    TenNCC NVARCHAR(100) NOT NULL,
+    DiaChi NVARCHAR(255),
+    SDT VARCHAR(15),
+    Email VARCHAR(100)
+);
+
+-- Bảng Khuyến Mãi
+CREATE TABLE KHUYENMAI (
+    MaKM VARCHAR(10) PRIMARY KEY,
+    TenKM NVARCHAR(100) NOT NULL,
+    PhanTramGiam FLOAT, -- Ví dụ: 0.1 cho 10%, 0.2 cho 20%
+    NgayBatDau DATE,
+    NgayKetThuc DATE
+);
+
+-- Bảng Khách Hàng
+CREATE TABLE KHACHHANG (
+    MaKH VARCHAR(10) PRIMARY KEY,
+    HoTen NVARCHAR(100) NOT NULL,
+    Email VARCHAR(100) UNIQUE,
+    SDT VARCHAR(15),
+    DiaChi NVARCHAR(255),
+    MatKhau VARCHAR(50) NOT NULL
+);
+
+-- Bảng Nhân Viên
+CREATE TABLE NHANVIEN (
+    MaNV VARCHAR(10) PRIMARY KEY,
+    HoTen NVARCHAR(100) NOT NULL,
+    SDT VARCHAR(15),
+    Email VARCHAR(100) UNIQUE,
+    MatKhau VARCHAR(50) NOT NULL,
+    QuyenSuDung INT -- Quy ước: 2 (Quản lý), 1 (Bán hàng), 0 (Giao hàng)
+);
+
+-- Bảng Sản Phẩm
+CREATE TABLE SANPHAM (
+    MaSP VARCHAR(10) PRIMARY KEY,
+    TenSP NVARCHAR(100) NOT NULL,
+    MoTa NVARCHAR(MAX),
+    DonViTinh NVARCHAR(50),
+    AnhSP VARCHAR(255),
+    DonGia DECIMAL(18, 2),
+    MaLSP VARCHAR(10),
+    MaNCC VARCHAR(10),
+    FOREIGN KEY (MaLSP) REFERENCES LOAISP(MaLSP),
+    FOREIGN KEY (MaNCC) REFERENCES NHACUNGCAP(MaNCC)
+);
+
+-- Bảng Hóa Đơn 
+CREATE TABLE HOADON (
+    SoHD VARCHAR(10) PRIMARY KEY,
+    NgayDat DATE,
+    NgayGiao DATE,
+    MaKH VARCHAR(10),
+    MaNVDuyet VARCHAR(10),
+    MaNVGiao VARCHAR(10),
+    MaKM VARCHAR(10),
+    TinhTrang INT, -- Quy ước: 0 (Chờ duyệt), 1 (Đã duyệt/Đang giao), 2 (Hoàn thành)
+    FOREIGN KEY (MaKH) REFERENCES KHACHHANG(MaKH),
+    FOREIGN KEY (MaNVDuyet) REFERENCES NHANVIEN(MaNV),
+    FOREIGN KEY (MaNVGiao) REFERENCES NHANVIEN(MaNV),
+    FOREIGN KEY (MaKM) REFERENCES KHUYENMAI(MaKM)
+);
+
+-- Bảng Chi Tiết Hóa Đơn (Đổi tên từ Chi Tiết GH)
+CREATE TABLE CHITIET_HD (
+    SoHD VARCHAR(10),
+    MaSP VARCHAR(10),
+    SoLuong INT CHECK (SoLuong > 0),
+    DonGiaBan DECIMAL(18, 2),
+    PRIMARY KEY (SoHD, MaSP), -- Khóa chính kép
+    FOREIGN KEY (SoHD) REFERENCES HOADON(SoHD),
+    FOREIGN KEY (MaSP) REFERENCES SANPHAM(MaSP)
+);
+
+--Yêu cầu 2: Nhập dữ liệu tối thiểu 20 bản ghi cho mỗi bảng 
+-- 1. NHẬP LIỆU BẢNG LOAISP 
+INSERT INTO LOAISP (MaLSP, TenLSP) VALUES 
+('LSP01', N'Nike Air Max'), ('LSP02', N'Nike Jordan'), ('LSP03', N'Nike Pegasus'), 
+('LSP04', N'Nike Dunk'), ('LSP05', N'Nike Blazer'), ('LSP06', N'Nike Metcon'),
+('LSP07', N'Nike Vaporfly'), ('LSP08', N'Nike Cortez'), ('LSP09', N'Giày đá bóng Nike'),
+('LSP10', N'Dép Nike'), ('LSP11', N'Áo thun Nike Pro'), ('LSP12', N'Áo khoác Nike Windrunner'),
+('LSP13', N'Quần tập Gym'), ('LSP14', N'Quần Short Tennis'), ('LSP15', N'Tất Nike Everyday'),
+('LSP16', N'Balo Nike Heritage'), ('LSP17', N'Mũ lưỡi trai Nike'), ('LSP18', N'Bình nước thể thao'),
+('LSP19', N'Băng cổ tay/đầu'), ('LSP20', N'Túi tập gym');
+
+-- 2. NHẬP LIỆU BẢNG NHACUNGCAP 
+INSERT INTO NHACUNGCAP (MaNCC, TenNCC, DiaChi, SDT, Email) VALUES 
+('NCC01', N'Nike Vietnam Factory', N'KCN Amata, Đồng Nai', '0251388111', 'factory@nike.vn'),
+('NCC02', N'ACFC Việt Nam', N'Quận 1, TP.HCM', '0283939111', 'contact@acfc.com.vn'),
+('NCC03', N'Adidas Partner Group', N'Quận 3, TP.HCM', '0283939222', 'info@partner.com'),
+('NCC04', N'Phân phối Thể Thao Việt', N'Hà Nội', '0243888333', 'sales@thethaoviet.vn'),
+('NCC05', N'Xưởng may mặc Thành Công', N'Nha Trang', '0258388844', 'thanhcong@gmail.com'),
+('NCC06', N'Gia công Đế giày ABC', N'Long An', '0272388855', 'degiay@abc.com'),
+('NCC07', N'Vải thể thao Tech-Dry', N'Bình Dương', '0274388866', 'techdry@vnn.vn'),
+('NCC08', N'In ấn Nike Alpha', N'TP.HCM', '0283888777', 'print@alpha.vn'),
+('NCC09', N'Phụ kiện nhựa Sport-X', N'Đà Nẵng', '0236388888', 'contact@sportx.vn'),
+('NCC10', N'Nike Global Logistics', N'Singapore', '+656888999', 'logistics@nike.com'),
+('NCC11', N'Bao bì Việt Hưng', N'Hưng Yên', '0221388800', 'baobi@viethung.com'),
+('NCC12', N'Chỉ may Coast VN', N'TP.HCM', '0283888112', 'coast@coast.vn'),
+('NCC13', N'Dây giày Strong-Tie', N'Vũng Tàu', '0254388813', 'strongtie@gmail.com'),
+('NCC14', N'Cao su Đà Nẵng DRC', N'Đà Nẵng', '0236388814', 'drc@danang.com'),
+('NCC15', N'Nhà máy dệt sợi kim', N'Nam Định', '0228388815', 'soikim@vn.com'),
+('NCC16', N'Hóa chất keo dán 3M', N'Hoa Kỳ', '+180036435', 'support@3m.com'),
+('NCC17', N'Cung ứng thiết bị NTU', N'Nha Trang', '0258388817', 'ntu-supply@edu.vn'),
+('NCC18', N'Đại lý ủy quyền Nike Cam Ranh', N'Cam Ranh', '0258388818', 'cr-nike@gmail.com'),
+('NCC19', N'Vận tải Phương Trang', N'Nha Trang', '19006067', 'futa@phuongtrang.vn'),
+('NCC20', N'Nhựa Duy Tân', N'TP.HCM', '0283888220', 'duytan@plastic.vn');
+
+-- 3. NHẬP LIỆU BẢNG KHUYENMAI 
+INSERT INTO KHUYENMAI (MaKM, TenKM, PhanTramGiam, NgayBatDau, NgayKetThuc) VALUES 
+('KM01', N'Khai trương chi nhánh Nha Trang', 0.2, '2026-01-01', '2026-01-15'),
+('KM02', N'Tết Nguyên Đán 2026', 0.15, '2026-01-20', '2026-02-10'),
+('KM03', N'Valentine Trọn Đôi', 0.14, '2026-02-13', '2026-02-15'),
+('KM04', N'Mừng Quốc tế Phụ nữ', 0.1, '2026-03-05', '2026-03-10'),
+('KM05', N'Giải phóng Miền Nam', 0.3, '2026-04-28', '2026-05-03'),
+('KM06', N'Hè rực rỡ Nike Pegasus', 0.05, '2026-06-01', '2026-06-30'),
+('KM07', N'Sinh nhật cửa hàng', 0.25, '2026-07-15', '2026-07-20'),
+('KM08', N'Back to School', 0.12, '2026-08-15', '2026-09-05'),
+('KM09', N'Mid Autumn Sale', 0.08, '2026-09-10', '2026-09-15'),
+('KM10', N'Ngày Phụ nữ Việt Nam', 0.1, '2026-10-18', '2026-10-22'),
+('KM11', N'Halloween Sport Night', 0.07, '2026-10-30', '2026-11-01'),
+('KM12', N'Black Friday Super Sale', 0.5, '2026-11-20', '2026-11-30'),
+('KM13', N'Cyber Monday Online', 0.4, '2026-12-01', '2026-12-03'),
+('KM14', N'Merry Christmas Nike', 0.2, '2026-12-20', '2026-12-26'),
+('KM15', N'New Year Eve 2027', 0.1, '2026-12-30', '2027-01-05'),
+('KM16', N'Tri ân khách hàng VIP', 0.05, '2026-01-01', '2026-12-31'),
+('KM17', N'Thứ 4 vui vẻ', 0.03, '2026-01-01', '2026-12-31'),
+('KM18', N'Flash Sale Giờ Vàng', 0.15, '2026-05-01', '2026-05-01'),
+('KM19', N'Mừng lễ Quốc Khánh', 0.2, '2026-09-01', '2026-09-05'),
+('KM20', N'Xả kho cuối mùa', 0.7, '2026-02-15', '2026-02-28');
+
+-- 4. NHẬP LIỆU BẢNG KHACHHANG 
+INSERT INTO KHACHHANG (MaKH, HoTen, Email, SDT, DiaChi, MatKhau) VALUES 
+('KH01', N'Nguyễn Văn An', 'an.nv@gmail.com', '0912345678', N'Trần Phú, Nha Trang', 'pass01'),
+('KH02', N'Lê Thị Bình', 'binh.lt@gmail.com', '0912345679', N'Lê Thánh Tôn, Nha Trang', 'pass02'),
+('KH03', N'Châu Võ Quốc Huy', 'huy.cvq@gmail.com', '0912345680', N'Vĩnh Hải, Nha Trang', 'pass03'),
+('KH04', N'Đỗ Hoài Danh', 'danh.dh@gmail.com', '0912345681', N'Phước Hải, Nha Trang', 'pass04'),
+('KH05', N'Hoàng Lan Anh', 'anh.hl@gmail.com', '0912345682', N'Dã Tượng, Nha Trang', 'pass05'),
+('KH06', N'Trương Công Định', 'dinh.tc@gmail.com', '0912345683', N'Hòn Rớ, Nha Trang', 'pass06'),
+('KH07', N'Vũ Thị Giang', 'giang.vt@gmail.com', '0912345684', N'Vĩnh Thạnh, Nha Trang', 'pass07'),
+('KH08', N'Trần Quốc Hoàn', 'hoan.tq@gmail.com', '0912345685', N'Ninh Hòa, Khánh Hòa', 'pass08'),
+('KH09', N'Lý Tiểu Long', 'long.lt@gmail.com', '0912345686', N'Cam Ranh, Khánh Hòa', 'pass09'),
+('KH10', N'Đặng Văn Lâm', 'lam.dv@gmail.com', '0912345687', N'Diên Khánh, Khánh Hòa', 'pass10'),
+('KH11', N'Phan Văn Đức', 'duc.pv@gmail.com', '0912345688', N'Hà Nội', 'pass11'),
+('KH12', N'Quế Ngọc Hải', 'hai.qn@gmail.com', '0912345689', N'Đà Nẵng', 'pass12'),
+('KH13', N'Nguyễn Tiến Linh', 'linh.nt@gmail.com', '0912345690', N'Bình Dương', 'pass13'),
+('KH14', N'Đoàn Văn Hậu', 'hau.dv@gmail.com', '0912345691', N'Thái Bình', 'pass14'),
+('KH15', N'Nguyễn Quang Hải', 'hai.nq@gmail.com', '0912345692', N'Hà Nội', 'pass15'),
+('KH16', N'Bùi Tiến Dũng', 'dung.bt@gmail.com', '0912345693', N'Thanh Hóa', 'pass16'),
+('KH17', N'Nguyễn Công Phượng', 'phuong.nc@gmail.com', '0912345694', N'Nghệ An', 'pass17'),
+('KH18', N'Lương Xuân Trường', 'truong.lx@gmail.com', '0912345695', N'Tuyên Quang', 'pass18'),
+('KH19', N'Nguyễn Tuấn Anh', 'anh.nt@gmail.com', '0912345696', N'Thái Bình', 'pass19'),
+('KH20', N'Đỗ Hùng Dũng', 'dung.dh@gmail.com', '0912345697', N'Hà Nội', 'pass20');
+
+-- 5. NHẬP LIỆU BẢNG NHANVIEN
+INSERT INTO NHANVIEN (MaNV, HoTen, SDT, Email, MatKhau, QuyenSuDung) VALUES 
+('NV01', N'Châu Quốc Cường', '0331234567', 'cuong.cq@nike.vn', 'admin123', 2),
+('NV02', N'Lê Hoàng Việt', '0331234568', 'viet.lh@nike.vn', 'admin456', 2),
+('NV03', N'Nguyễn Hoàng Nam', '0331234569', 'nam.nh@nike.vn', 'sales01', 1),
+('NV04', N'Trần Minh Tâm', '0331234570', 'tam.tm@nike.vn', 'sales02', 1),
+('NV05', N'Lê Xuân Bắc', '0331234571', 'bac.lx@nike.vn', 'sales03', 1),
+('NV06', N'Phạm Hải Nam', '0331234572', 'nam.ph@nike.vn', 'ship01', 0),
+('NV07', N'Đinh Tiến Đạt', '0331234573', 'dat.dt@nike.vn', 'ship02', 0),
+('NV08', N'Lý Gia Thành', '0331234574', 'thanh.lg@nike.vn', 'sales04', 1),
+('NV09', N'Phan Thanh Hùng', '0331234575', 'hung.pt@nike.vn', 'sales05', 1),
+('NV10', N'Trần Văn Kiên', '0331234576', 'kien.tv@nike.vn', 'ship03', 0),
+('NV11', N'Nguyễn Bích Ngọc', '0331234577', 'ngoc.nb@nike.vn', 'sales06', 1),
+('NV12', N'Hoàng Thu Thủy', '0331234578', 'thuy.ht@nike.vn', 'sales07', 1),
+('NV13', N'Lê Minh Chiến', '0331234579', 'chien.lm@nike.vn', 'ship04', 0),
+('NV14', N'Đặng Quốc Bảo', '0331234580', 'bao.dq@nike.vn', 'ship05', 0),
+('NV15', N'Vũ Phương Ly', '0331234581', 'ly.vp@nike.vn', 'sales08', 1),
+('NV16', N'Trịnh Văn Thắng', '0331234582', 'thang.tv@nike.vn', 'sales09', 1),
+('NV17', N'Đào Thu Trang', '0331234583', 'trang.dt@nike.vn', 'sales10', 1),
+('NV18', N'Ngô Gia Tự', '0331234584', 'tu.ng@nike.vn', 'ship06', 0),
+('NV19', N'Phùng Hưng', '0331234585', 'hung.p@nike.vn', 'ship07', 0),
+('NV20', N'Trần Bình Trọng', '0331234586', 'trong.tb@nike.vn', 'ship08', 0);
+
+-- 6. NHẬP LIỆU BẢNG SANPHAM 
+INSERT INTO SANPHAM (MaSP, TenSP, MoTa, DonViTinh, AnhSP, DonGia, MaLSP, MaNCC) VALUES 
+('SP01', N'Air Max 270', N'Giày thể thao êm ái', N'Đôi', 'nike270.jpg', 4500000, 'LSP01', 'NCC01'),
+('SP02', N'Jordan 1 High OG', N'Huyền thoại bóng rổ', N'Đôi', 'jordan1.jpg', 5200000, 'LSP02', 'NCC02'),
+('SP03', N'Pegasus 40', N'Giày chạy bộ đường trường', N'Đôi', 'pegasus40.jpg', 3800000, 'LSP03', 'NCC01'),
+('SP04', N'Dunk Low Panda', N'Phong cách đường phố', N'Đôi', 'dunkpanda.jpg', 3200000, 'LSP04', 'NCC02'),
+('SP05', N'Metcon 9', N'Chuyên dụng tập gym', N'Đôi', 'metcon9.jpg', 4100000, 'LSP06', 'NCC04'),
+('SP06', N'Vaporfly Next% 3', N'Phá vỡ giới hạn tốc độ', N'Đôi', 'vaporfly.jpg', 7500000, 'LSP07', 'NCC10'),
+('SP07', N'Nike Cortez White', N'Cổ điển thanh lịch', N'Đôi', 'cortez.jpg', 2500000, 'LSP08', 'NCC02'),
+('SP08', N'Mercurial Vapor 15', N'Giày đá bóng cỏ tự nhiên', N'Đôi', 'mercurial.jpg', 6200000, 'LSP09', 'NCC01'),
+('SP09', N'Nike Calm Slide', N'Dép lê thời trang', N'Đôi', 'calmslide.jpg', 1200000, 'LSP10', 'NCC04'),
+('SP10', N'Áo Nike Dri-FIT', N'Thoáng khí hút mồ hôi', N'Cái', 'drifit.jpg', 850000, 'LSP11', 'NCC05'),
+('SP11', N'Nike Windrunner', N'Áo khoác chống gió', N'Cái', 'windrunner.jpg', 2200000, 'LSP12', 'NCC05'),
+('SP12', N'Quần Short Flex', N'Co giãn tối ưu', N'Cái', 'flexshort.jpg', 950000, 'LSP14', 'NCC05'),
+('SP13', N'Tất cao cổ Nike', N'Combo 3 đôi', N'Hộp', 'socks.jpg', 450000, 'LSP15', 'NCC09'),
+('SP14', N'Balo Heritage', N'Dung tích 25L', N'Cái', 'backpack.jpg', 1100000, 'LSP16', 'NCC11'),
+('SP15', N'Mũ lưỡi trai Heritage86', N'Chất liệu cotton', N'Cái', 'cap.jpg', 650000, 'LSP17', 'NCC05'),
+('SP16', N'Nike Jordan 4 Retro', N'Thiết kế mạnh mẽ', N'Đôi', 'jordan4.jpg', 6800000, 'LSP02', 'NCC02'),
+('SP17', N'Nike Air Force 1', N'Biểu tượng văn hóa', N'Đôi', 'af1.jpg', 2900000, 'LSP04', 'NCC01'),
+('SP18', N'Nike Air Max 90', N'Thiết kế vượt thời gian', N'Đôi', 'am90.jpg', 3900000, 'LSP01', 'NCC10'),
+('SP19', N'Quần Jogger Nike Tech', N'Vải Tech Fleece', N'Cái', 'jogger.jpg', 2800000, 'LSP13', 'NCC05'),
+('SP20', N'Túi trống tập Gym', N'Size M', N'Cái', 'gymbag.jpg', 1350000, 'LSP20', 'NCC11');
+
+-- 7. NHẬP LIỆU BẢNG HOADON 
+INSERT INTO HOADON (SoHD, NgayDat, NgayGiao, MaKH, MaNVDuyet, MaNVGiao, MaKM, TinhTrang) VALUES 
+('HD01', '2026-01-05', '2026-01-06', 'KH01', 'NV01', 'NV06', 'KM01', 2),
+('HD02', '2026-01-10', '2026-01-11', 'KH02', 'NV02', 'NV07', 'KM01', 2),
+('HD03', '2026-02-01', '2026-02-03', 'KH03', 'NV01', 'NV10', 'KM02', 2),
+('HD04', '2026-02-14', '2026-02-15', 'KH05', 'NV03', 'NV06', 'KM03', 2),
+('HD05', '2026-03-08', '2026-03-09', 'KH07', 'NV04', 'NV13', 'KM04', 2),
+('HD06', '2026-04-30', '2026-05-02', 'KH08', 'NV01', 'NV14', 'KM05', 1),
+('HD07', '2026-01-01', '2026-01-02', 'KH01', 'NV02', 'NV18', 'KM01', 2),
+('HD08', '2026-02-20', '2026-02-22', 'KH10', 'NV03', 'NV19', 'KM20', 2),
+('HD09', '2026-05-01', '2026-05-01', 'KH15', 'NV04', 'NV06', 'KM18', 2),
+('HD10', '2026-06-15', '2026-06-17', 'KH11', 'NV05', 'NV20', 'KM06', 2),
+('HD11', '2026-07-16', '2026-07-18', 'KH12', 'NV01', 'NV10', 'KM07', 2),
+('HD12', '2026-08-20', '2026-08-22', 'KH13', 'NV08', 'NV07', 'KM08', 2),
+('HD13', '2026-09-12', '2026-09-14', 'KH14', 'NV09', 'NV13', 'KM09', 2),
+('HD14', '2026-10-20', '2026-10-22', 'KH04', 'NV11', 'NV14', 'KM10', 2),
+('HD15', '2026-11-25', '2026-11-27', 'KH16', 'NV12', 'NV18', 'KM12', 2),
+('HD16', '2026-12-02', '2026-12-04', 'KH17', 'NV15', 'NV19', 'KM13', 2),
+('HD17', '2026-12-24', '2026-12-26', 'KH18', 'NV16', 'NV20', 'KM14', 2),
+('HD18', '2026-01-05', '2026-01-07', 'KH19', 'NV17', 'NV06', 'KM01', 2),
+('HD19', '2026-03-08', '2026-03-10', 'KH20', 'NV01', 'NV10', 'KM04', 1),
+('HD20', '2026-12-31', '2027-01-02', 'KH06', 'NV02', 'NV13', 'KM15', 0);
+
+-- 8. NHẬP LIỆU BẢNG CHITIET_HD 
+INSERT INTO CHITIET_HD (SoHD, MaSP, SoLuong, DonGiaBan) VALUES 
+('HD01', 'SP01', 1, 4500000), ('HD01', 'SP10', 2, 850000),
+('HD02', 'SP02', 1, 5200000), ('HD03', 'SP03', 1, 3800000),
+('HD04', 'SP16', 1, 6800000), ('HD05', 'SP05', 2, 4100000),
+('HD06', 'SP06', 1, 7500000), ('HD07', 'SP17', 3, 2900000),
+('HD08', 'SP07', 1, 2500000), ('HD09', 'SP08', 1, 6200000),
+('HD10', 'SP03', 2, 3800000), ('HD11', 'SP18', 1, 3900000),
+('HD12', 'SP13', 5, 450000), ('HD13', 'SP14', 1, 1100000),
+('HD14', 'SP15', 2, 650000), ('HD15', 'SP02', 2, 5200000),
+('HD16', 'SP04', 1, 3200000), ('HD17', 'SP11', 1, 2200000),
+('HD18', 'SP19', 1, 2800000), ('HD19', 'SP20', 1, 1350000),
+('HD20', 'SP10', 3, 850000);
+
+--Yêu cầu 3: Tạo 40 câu truy vấn
+--a. Truy vấn đơn giản: 5 câu
+
+-- 1. Lấy danh sách tất cả sản phẩm đang kinh doanh
+SELECT * FROM SANPHAM;
+
+-- 2. Lấy thông tin khách hàng sinh sống ở khu vực Nha Trang
+SELECT MaKH, HoTen, SDT, DiaChi 
+FROM KHACHHANG 
+WHERE DiaChi LIKE N'%Nha Trang%';
+
+-- 3. Liệt kê sản phẩm có giá bán trên 1,000,000 VNĐ, sắp xếp giá giảm dần
+SELECT MaSP, TenSP, DonGia, DonViTinh 
+FROM SANPHAM 
+WHERE DonGia > 1000000 
+ORDER BY DonGia DESC;
+
+-- 4. Xem các chương trình khuyến mãi đang diễn ra (dựa vào ngày hệ thống)
+SELECT * FROM KHUYENMAI 
+WHERE NgayBatDau <= GETDATE() AND NgayKetThuc >= GETDATE();
+
+-- 5. Danh sách các nhân viên đảm nhận vai trò giao hàng (QuyenSuDung = 0)
+SELECT MaNV, HoTen, SDT 
+FROM NHANVIEN 
+WHERE QuyenSuDung = 0;
+
+--b. Truy vấn với Aggregate Functions: 7 câu
+
+-- 1. Thống kê số lượng mặt hàng (sản phẩm) theo từng loại sản phẩm
+SELECT MaLSP, COUNT(MaSP) AS SoLuongSanPham 
+FROM SANPHAM 
+GROUP BY MaLSP;
+
+-- 2. Tính tổng số lượng đã bán ra của từng mã sản phẩm
+SELECT MaSP, SUM(SoLuong) AS TongSoLuongDaBan 
+FROM CHITIET_HD 
+GROUP BY MaSP;
+
+-- 3. Tính mức giá trung bình của các sản phẩm do từng nhà cung cấp phân phối
+SELECT MaNCC, AVG(DonGia) AS GiaTrungBinh 
+FROM SANPHAM 
+GROUP BY MaNCC;
+
+-- 4. Đếm tổng số lượng đơn hàng mà mỗi khách hàng đã đặt
+SELECT MaKH, COUNT(SoHD) AS TongSoDonHang 
+FROM HOADON 
+GROUP BY MaKH;
+
+-- 5. Tìm ngày có lượng đơn đặt hàng nhiều nhất (gom nhóm theo ngày đặt)
+SELECT NgayDat, COUNT(SoHD) AS SoLuongHoaDon 
+FROM HOADON 
+GROUP BY NgayDat 
+ORDER BY SoLuongHoaDon DESC;
+
+-- 6. Tính tổng thành tiền (chưa trừ khuyến mãi) của từng hóa đơn
+SELECT SoHD, SUM(SoLuong * DonGiaBan) AS TongTienHoaDon 
+FROM CHITIET_HD 
+GROUP BY SoHD;
+
+-- 7. Thống kê số lượng nhân sự theo từng nhóm quyền (Quản lý, Bán hàng, Giao hàng)
+SELECT QuyenSuDung, COUNT(MaNV) AS SoLuongNhanVien 
+FROM NHANVIEN 
+GROUP BY QuyenSuDung;
+
+--c. Truy vấn với mệnh đề having: 5 câu 
+--1. Lấy ra mã và tên các loại sản phẩm có chứa từ 2 mặt hàng (sản phẩm) trở lên
+SELECT L.MaLSP, L.TenLSP, COUNT(S.MaSP) AS SoLuongSP
+FROM LOAISP L JOIN SANPHAM S ON L.MaLSP = S.MaLSP
+GROUP BY L.MaLSP, L.TenLSP
+HAVING COUNT(S.MaSP) >= 2;
+
+-- 2. Liệt kê các nhà cung cấp phân phối trên 1 mặt hàng cho cửa hàng
+SELECT N.MaNCC, N.TenNCC, COUNT(S.MaSP) AS SoLuongSanPham
+FROM NHACUNGCAP N JOIN SANPHAM S ON N.MaNCC = S.MaNCC
+GROUP BY N.MaNCC, N.TenNCC
+HAVING COUNT(S.MaSP) > 1;
+
+-- 3. Hiển thị các hóa đơn có tổng giá trị (thành tiền) lớn hơn 10,000,000 VNĐ
+SELECT SoHD, SUM(SoLuong * DonGiaBan) AS TongTien
+FROM CHITIET_HD
+GROUP BY SoHD
+HAVING SUM(SoLuong * DonGiaBan) > 10000000;
+
+-- 4. Tìm những khách hàng đã đặt từ 2 đơn hàng trở lên
+SELECT MaKH, COUNT(SoHD) AS SoLanMua
+FROM HOADON
+GROUP BY MaKH
+HAVING COUNT(SoHD) >= 2;
+
+-- 5. Những ngày có tổng số lượng sản phẩm bán ra lớn hơn 3 sản phẩm
+SELECT H.NgayDat, SUM(C.SoLuong) AS TongSPBanRa
+FROM HOADON H JOIN CHITIET_HD C ON H.SoHD = C.SoHD
+GROUP BY H.NgayDat
+HAVING SUM(C.SoLuong) > 3;
+
+--d.	Truy vấn lớn nhất, nhỏ nhất: 4 câu  
+-- 1. Tìm sản phẩm có đơn giá nhập (DonGia) cao nhất cửa hàng
+SELECT TOP 1 MaSP, TenSP, DonGia 
+FROM SANPHAM 
+ORDER BY DonGia DESC;
+
+-- 2. Tìm hóa đơn có tổng tiền thấp nhất
+SELECT TOP 1 SoHD, SUM(SoLuong * DonGiaBan) AS TongTien
+FROM CHITIET_HD
+GROUP BY SoHD
+ORDER BY TongTien ASC;
+
+-- 3. Tìm nhà cung cấp cung cấp nhiều sản phẩm đa dạng nhất
+SELECT TOP 1 N.MaNCC, N.TenNCC, COUNT(S.MaSP) AS SoLuongSP
+FROM NHACUNGCAP N JOIN SANPHAM S ON N.MaNCC = S.MaNCC
+GROUP BY N.MaNCC, N.TenNCC
+ORDER BY SoLuongSP DESC;
+
+-- 4. Khách hàng chi nhiều tiền nhất tại cửa hàng (Khách hàng VIP nhất)
+SELECT TOP 1 H.MaKH, K.HoTen, SUM(C.SoLuong * C.DonGiaBan) AS TongTienDaChi
+FROM HOADON H 
+JOIN CHITIET_HD C ON H.SoHD = C.SoHD
+JOIN KHACHHANG K ON H.MaKH = K.MaKH
+GROUP BY H.MaKH, K.HoTen
+ORDER BY TongTienDaChi DESC;
+
+--e.	Truy vấn Không/chưa có: (Not In và left/right join): 5 câu 
+-- 1. Khách hàng chưa từng mua bất kỳ đơn hàng nào (Dùng LEFT JOIN)
+SELECT K.MaKH, K.HoTen
+FROM KHACHHANG K LEFT JOIN HOADON H ON K.MaKH = H.MaKH
+WHERE H.SoHD IS NULL;
+
+-- 2. Sản phẩm chưa từng được bán ra (Dùng NOT IN)
+SELECT MaSP, TenSP 
+FROM SANPHAM 
+WHERE MaSP NOT IN (SELECT DISTINCT MaSP FROM CHITIET_HD);
+
+-- 3. Nhân viên chưa từng duyệt hóa đơn nào (Dùng LEFT JOIN)
+SELECT N.MaNV, N.HoTen
+FROM NHANVIEN N LEFT JOIN HOADON H ON N.MaNV = H.MaNVDuyet
+WHERE H.SoHD IS NULL AND N.QuyenSuDung IN (1, 2); -- Lọc nv bán hàng và quản lý
+
+-- 4. Nhà cung cấp chưa có sản phẩm nào trong cửa hàng (Dùng NOT IN)
+SELECT MaNCC, TenNCC 
+FROM NHACUNGCAP 
+WHERE MaNCC NOT IN (SELECT DISTINCT MaNCC FROM SANPHAM WHERE MaNCC IS NOT NULL);
+
+-- 5. Chương trình khuyến mãi chưa được áp dụng cho hóa đơn nào (Dùng RIGHT JOIN)
+SELECT K.MaKM, K.TenKM
+FROM HOADON H RIGHT JOIN KHUYENMAI K ON H.MaKM = K.MaKM
+WHERE H.SoHD IS NULL;
+
+--f.	Truy vấn Hợp/Giao/Trừ: 3 câu
+-- 1. HỢP (UNION): Lấy danh sách Số điện thoại và Email của cả Khách hàng và Nhân viên (để làm chiến dịch Marketing)
+SELECT SDT, Email, 'Khach Hang' AS DoiTuong FROM KHACHHANG
+UNION
+SELECT SDT, Email, 'Nhan Vien' AS DoiTuong FROM NHANVIEN;
+
+-- 2. GIAO (INTERSECT): Tìm những mã sản phẩm vừa có giá lớn hơn 3tr, vừa thuộc loại LSP01 hoặc LSP02
+SELECT MaSP FROM SANPHAM WHERE DonGia > 3000000
+INTERSECT
+SELECT MaSP FROM SANPHAM WHERE MaLSP IN ('LSP01', 'LSP02');
+
+-- 3. TRỪ (EXCEPT): Lấy danh sách mã sản phẩm có ở nhà cung cấp 'NCC01' nhưng KHÔNG CÓ ai mua (không nằm trong chi tiết HD)
+SELECT MaSP FROM SANPHAM WHERE MaNCC = 'NCC01'
+EXCEPT
+SELECT MaSP FROM CHITIET_HD;
+
+--g.	Truy vấn Update, Delete:  7 câu
+-- 1. Cập nhật tăng giá thêm 10% cho tất cả sản phẩm thuộc loại 'Nike Air Max' (LSP01)
+UPDATE SANPHAM 
+SET DonGia = DonGia * 1.1 
+WHERE MaLSP = 'LSP01';
+
+-- 2. Đổi tình trạng hóa đơn 'HD06' thành hoàn thành (TinhTrang = 2)
+UPDATE HOADON 
+SET TinhTrang = 2 
+WHERE SoHD = 'HD06';
+
+-- 3. Cập nhật địa chỉ cho khách hàng mã 'KH09'
+UPDATE KHACHHANG 
+SET DiaChi = N'Trung tâm Cam Ranh, Khánh Hòa' 
+WHERE MaKH = 'KH09';
+
+-- 4. Giảm giá bán trực tiếp 200,000 VNĐ cho sản phẩm 'SP05' trong chi tiết hóa đơn 'HD05'
+UPDATE CHITIET_HD 
+SET DonGiaBan = DonGiaBan - 200000 
+WHERE SoHD = 'HD05' AND MaSP = 'SP05';
+
+-- 5. Đổi nhân viên giao hàng cho đơn 'HD19' thành nhân viên 'NV20'
+UPDATE HOADON 
+SET MaNVGiao = 'NV20' 
+WHERE SoHD = 'HD19';
+
+-- 6. Xóa chi tiết hóa đơn của sản phẩm 'SP10' trong đơn hàng 'HD20'
+DELETE FROM CHITIET_HD 
+WHERE SoHD = 'HD20' AND MaSP = 'SP10';
+
+-- 7. Xóa các chương trình khuyến mãi đã kết thúc trước năm 2025 (nếu có)
+DELETE FROM KHUYENMAI 
+WHERE NgayKetThuc < '2025-01-01';
+
+--h.	Truy vấn sử dụng phép Chia: 4 câu 
+-- 1. Tìm khách hàng đã mua TẤT CẢ các loại sản phẩm của nhà cung cấp 'NCC01'
+SELECT MaKH, HoTen FROM KHACHHANG K
+WHERE NOT EXISTS (
+    SELECT MaSP FROM SANPHAM WHERE MaNCC = 'NCC01' -- Tập hợp tất cả SP của NCC01
+    EXCEPT
+    SELECT C.MaSP FROM HOADON H JOIN CHITIET_HD C ON H.SoHD = C.SoHD WHERE H.MaKH = K.MaKH -- Tập hợp các SP khách hàng này đã mua
+);
+
+-- 2. Tìm hóa đơn chứa TẤT CẢ các sản phẩm thuộc loại 'LSP04' (Nike Dunk)
+SELECT SoHD FROM HOADON H
+WHERE NOT EXISTS (
+    SELECT MaSP FROM SANPHAM WHERE MaLSP = 'LSP04'
+    EXCEPT
+    SELECT MaSP FROM CHITIET_HD C WHERE C.SoHD = H.SoHD
+);
+
+-- 3. Tìm nhân viên đã duyệt hóa đơn cho TẤT CẢ các khách hàng ở 'Hà Nội'
+SELECT MaNV, HoTen FROM NHANVIEN N
+WHERE NOT EXISTS (
+    SELECT MaKH FROM KHACHHANG WHERE DiaChi LIKE N'%Hà Nội%'
+    EXCEPT
+    SELECT MaKH FROM HOADON H WHERE H.MaNVDuyet = N.MaNV
+);
+
+-- 4. Tìm khách hàng đã mua TẤT CẢ các sản phẩm có giá trị lớn hơn 7,000,000 VNĐ (SP VIP)
+-- Dùng phương pháp đếm (GROUP BY HAVING COUNT) - Đây là cách thứ 2 để làm phép chia
+SELECT H.MaKH
+FROM HOADON H JOIN CHITIET_HD C ON H.SoHD = C.SoHD
+JOIN SANPHAM S ON C.MaSP = S.MaSP
+WHERE S.DonGia > 7000000
+GROUP BY H.MaKH
+HAVING COUNT(DISTINCT S.MaSP) = (SELECT COUNT(MaSP) FROM SANPHAM WHERE DonGia > 7000000);
