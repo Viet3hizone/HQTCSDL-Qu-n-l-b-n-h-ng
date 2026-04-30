@@ -1,4 +1,109 @@
-﻿ 
+﻿CREATE DATABASE QLCuaHangNike;
+GO
+
+USE QLCuaHangNike;
+GO
+--Yêu cầu 1: CSDL của đồ án chứa ít nhất 7 bảng (table), đáp ứng dạng chuẩn 3 trở lên :
+
+-- Bảng Loại Sản Phẩm
+CREATE TABLE LOAISP (
+    MaLSP VARCHAR(10) PRIMARY KEY,
+    TenLSP NVARCHAR(100) NOT NULL
+);
+
+-- Bảng Nhà Cung Cấp
+CREATE TABLE NHACUNGCAP (
+    MaNCC VARCHAR(10) PRIMARY KEY,
+    TenNCC NVARCHAR(100) NOT NULL,
+    DiaChi NVARCHAR(255),
+    SDT VARCHAR(15),
+    Email VARCHAR(100)
+);
+
+-- Bảng Khuyến Mãi
+CREATE TABLE KHUYENMAI (
+    MaKM VARCHAR(10) PRIMARY KEY,
+    TenKM NVARCHAR(100) NOT NULL,
+    PhanTramGiam DECIMAL(5,2),
+    NgayBatDau DATE,
+    NgayKetThuc DATE
+);
+-- Bảng Khách Hàng
+CREATE TABLE KHACHHANG (
+    MaKH VARCHAR(10) PRIMARY KEY,
+    HoTen NVARCHAR(100) NOT NULL,
+    Email VARCHAR(100) UNIQUE,
+    SDT VARCHAR(15),
+    DiaChi NVARCHAR(255),
+    MatKhau VARCHAR(50) NOT NULL
+);
+
+-- Bảng Nhân Viên
+CREATE TABLE NHANVIEN (
+    MaNV VARCHAR(10) PRIMARY KEY,
+    HoTen NVARCHAR(100) NOT NULL,
+    SDT VARCHAR(15),
+    Email VARCHAR(100) UNIQUE,
+    MatKhau VARCHAR(50) NOT NULL,
+    QuyenSuDung INT -- Quy ước: 2 (Quản lý), 1 (Bán hàng), 0 (Giao hàng)
+);
+
+-- Bảng Sản Phẩm
+CREATE TABLE SANPHAM (
+    MaSP VARCHAR(10) PRIMARY KEY,
+    TenSP NVARCHAR(100) NOT NULL,
+    MoTa NVARCHAR(MAX),
+    AnhSP VARCHAR(255),
+    MaLSP VARCHAR(10), -- Khóa ngoại từ bảng LOAISP
+    MaNCC VARCHAR(10), -- Khóa ngoại từ bảng NHACUNGCAP
+    FOREIGN KEY (MaLSP) REFERENCES LOAISP(MaLSP),
+    FOREIGN KEY (MaNCC) REFERENCES NHACUNGCAP(MaNCC)
+);
+--Bảng chi tiết sản phẩm
+CREATE TABLE CHITIET_SANPHAM (
+    MaCTSP VARCHAR(10) PRIMARY KEY,
+    MaSP VARCHAR(10),
+    Size FLOAT NOT NULL,
+    MauSac NVARCHAR(50),
+    DonGia DECIMAL(18, 2), -- Giá bán lẻ của size đó
+    SoLuongTon INT DEFAULT 0,
+    MaKM VARCHAR(10), -- Liên kết trực tiếp Khuyến mãi vào từng biến thể SP
+    FOREIGN KEY (MaSP) REFERENCES SANPHAM(MaSP),
+    FOREIGN KEY (MaKM) REFERENCES KHUYENMAI(MaKM)
+);
+-- Bảng Hóa Đơn 
+CREATE TABLE HOADON (
+    SoHD VARCHAR(10) PRIMARY KEY,
+    NgayDat DATE,
+    NgayGiao DATE,
+    MaKH VARCHAR(10),
+    MaNVDuyet VARCHAR(10),
+    MaNVGiao VARCHAR(10),
+    MaKM VARCHAR(10),
+    TinhTrang INT, -- Quy ước: 0 (Chờ duyệt), 1 (Đã duyệt/Đang giao), 2 (Hoàn thành)
+    FOREIGN KEY (MaKH) REFERENCES KHACHHANG(MaKH),
+    FOREIGN KEY (MaNVDuyet) REFERENCES NHANVIEN(MaNV),
+    FOREIGN KEY (MaNVGiao) REFERENCES NHANVIEN(MaNV),
+    FOREIGN KEY (MaKM) REFERENCES KHUYENMAI(MaKM)
+);
+
+-- Bảng Chi Tiết Hóa Đơn (Đổi tên từ Chi Tiết GH)
+CREATE TABLE CHITIET_HD (
+    SoHD VARCHAR(10),
+    MaCTSP VARCHAR(10), -- PHẢI là MaCTSP để biết khách mua Size nào
+    SoLuong INT CHECK (SoLuong > 0),
+    DonGiaBan DECIMAL(18, 2), -- Đây là giá thực tế lúc khách bấm mua
+    PRIMARY KEY (SoHD, MaCTSP),--khóa chính kép
+    FOREIGN KEY (SoHD) REFERENCES HOADON(SoHD),
+    FOREIGN KEY (MaCTSP) REFERENCES CHITIET_SANPHAM(MaCTSP)
+);
+
+--các ràng buộc cố định 
+ALTER TABLE NHANVIEN ADD CHECK (QuyenSuDung IN (0,1,2));
+ALTER TABLE HOADON ADD CHECK (TinhTrang IN (0,1,2));
+ALTER TABLE HOADON ADD CHECK (NgayGiao >= NgayDat);
+ALTER TABLE KHUYENMAI ADD CHECK (PhanTramGiam BETWEEN 0 AND 100);
+ALTER TABLE CHITIET_HD ADD CHECK (SoLuong > 0); 
 --Yêu cầu 2: Nhập dữ liệu tối thiểu 20 bản ghi cho mỗi bảng 
 -- NHẬP DỮ LIỆU ĐẦY ĐỦ 20 BẢN GHI/BẢNG
 
