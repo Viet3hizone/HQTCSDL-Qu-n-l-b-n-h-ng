@@ -1,0 +1,9 @@
+30/4/2026
+
+-thêm bảng CHITIET_SANPHAM lưu size, màu sắc, giá bán lẻ (DonGia), số lượng tồn (SoLuongTon), và khuyến mãi riêng (MaKM)
+- Xóa DonViTinh và DonGia trong bảng SANPHAM.
+-Thay đổi cấu trúc bảng CHITIET_HD : +Khóa ngoại MaCTSP → CHITIET_SANPHAM
+							+ Khóa chính: (SoHD, MaCTSP)
+
+-Thay đổi kiểu dữ liệu PhanTramGiam  trong bảng KHUYENMAI : DECIMAL(5,2)
+-Bổ sung các ràng buộc CHECK :
