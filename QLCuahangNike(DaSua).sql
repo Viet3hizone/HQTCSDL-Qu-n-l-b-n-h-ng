@@ -3,11 +3,6 @@ GO
 USE QLCuaHangNike;
 GO
 
-CREATE DATABASE QLCuaHangNike;
-GO
-USE QLCuaHangNike;
-GO
-
 -- 1. Bảng Kích Cỡ
 CREATE TABLE KICHCO (
     MaSize VARCHAR(10) PRIMARY KEY,
