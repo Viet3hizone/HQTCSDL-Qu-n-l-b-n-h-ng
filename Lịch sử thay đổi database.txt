@@ -7,3 +7,9 @@
 
 -Thay đổi kiểu dữ liệu PhanTramGiam  trong bảng KHUYENMAI : DECIMAL(5,2)
 -Bổ sung các ràng buộc CHECK :
+
+
+
+
+5/7/2026
+thay đổi theo cô yêu cầu
