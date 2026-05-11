@@ -801,7 +801,6 @@ GO
 --Yêu cầu 4:
 --Tạo 7 thủ tục
 
-<<<<<<< HEAD
 -- 1. THỦ TỤC ĐĂNG KÝ KHÁCH HÀNG MỚI (Dùng cho trang Đăng ký)
 -- Kiểm tra xem Email hoặc SĐT đã tồn tại chưa trước khi thêm mới
 
@@ -986,8 +985,7 @@ BEGIN
 END
 GO
 -- Minh họa: EXEC sp_ThongKe_DoanhThu_KhoangThoiGian '2024-01-01', '2024-12-31';
-=======
->>>>>>> eac908ebbb153cb0e88333baa6fde93a5fb4490b
+
 
 --8 hàm 
 --hàm lấy thông tin khách hàng dựa vào số điện thoại
