@@ -1232,6 +1232,7 @@ BEGIN
 END
 GO
 --Minh hoa:
+
 --Yêu cầu 5: tạo user 
 --tạo user quản trị hệ thống 
 USE master;
@@ -1294,21 +1295,21 @@ GRANT SELECT TO KiemToanBaoMat;
 DENY INSERT, UPDATE, DELETE TO KiemToanBaoMat;
 GO
 
-
 ---------------------------------------------------------------------------------------
 -- tạo user cho khách hàng
 USE master;
-CREATE LOGIN GuestUser WITH PASSWORD = 'Password123';
+CREATE LOGIN KhachHang WITH PASSWORD = 'Password123';
 GO
 USE QLCuaHangNike;
-CREATE USER GuestUser FOR LOGIN GuestUser;
+CREATE USER KhachHang FOR LOGIN KhachHang;
 
 -- Chỉ cho phép xem sản phẩm và đánh giá
-GRANT SELECT ON SANPHAM TO GuestUser;
-GRANT SELECT ON DANHGIASANPHAM TO GuestUser;
-
+GRANT SELECT ON SANPHAM TO KhachHang;
+GRANT SELECT ON DANHGIASANPHAM TO KhachHang;
+--Thu hồi mọi quyền Select đã cấp nhầm ở cấp độ toàn bộ Schema (nếu có)
+REVOKE SELECT ON SCHEMA::dbo FROM KhachHang;
 -- Cấm xem các thông tin kinh doanh nội bộ (Hóa đơn, Phiếu nhập, Nhà cung cấp)
-DENY SELECT ON HOADON TO GuestUser;
-DENY SELECT ON PHIEUNHAP TO GuestUser;
-DENY SELECT ON NHACUNGCAP TO GuestUser;
+DENY SELECT ON HOADON TO KhachHang;
+DENY SELECT ON PHIEUNHAP TO KhachHang;
+DENY SELECT ON NHACUNGCAP TO KhachHang;
 GO
