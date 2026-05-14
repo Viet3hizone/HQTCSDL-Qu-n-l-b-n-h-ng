@@ -1233,4 +1233,82 @@ END
 GO
 --Minh hoa:
 --Yêu cầu 5: tạo user 
+--tạo user quản trị hệ thống 
+USE master;
+CREATE LOGIN AdminMaster WITH PASSWORD = 'Password123';
+GO
+USE QLCuaHangNike;
+CREATE USER AdminMaster FOR LOGIN AdminMaster;
 
+-- Cấp quyền quản lý Database và quyền tạo User mới
+GRANT CONTROL ON DATABASE::QLCuaHangNike TO AdminMaster;
+GRANT ALTER ANY USER TO AdminMaster;
+
+-- Cấp quyền SELECT kèm khả năng cấp quyền này cho người khác (GRANT OPTION)
+GRANT SELECT ON SCHEMA::dbo TO AdminMaster WITH GRANT OPTION;
+GO
+----------------------------------------------------
+
+--tạo user Quản lý cửa hàng
+
+USE master;
+CREATE LOGIN ManagerUser WITH PASSWORD = 'Password123';
+GO
+USE QLCuaHangNike;
+CREATE USER ManagerUser FOR LOGIN ManagerUser;
+
+-- Cấp quyền xem, thêm và sửa dữ liệu
+GRANT SELECT, INSERT, UPDATE TO ManagerUser;
+
+-- Sử dụng REVOKE để thu hồi quyền DELETE (đảm bảo không thể xóa dữ liệu)
+REVOKE DELETE ON SCHEMA::dbo FROM ManagerUser;
+GO
+----------------------------------------------------
+--tạo user nhân viên bán hàng 
+USE master;
+CREATE LOGIN StaffUser WITH PASSWORD = 'Password123';
+GO
+USE QLCuaHangNike;
+CREATE USER StaffUser FOR LOGIN StaffUser;
+
+-- Chỉ cấp quyền SELECT trên các bảng cần thiết
+GRANT SELECT ON SANPHAM TO StaffUser;
+GRANT SELECT, INSERT ON HOADON TO StaffUser;
+GRANT SELECT, INSERT ON CHITIET_HD TO StaffUser;
+
+-- Sử dụng DENY để cấm xem cột nhạy cảm (Mật khẩu) trong bảng NHANVIEN
+DENY SELECT ON NHANVIEN(MatKhau) TO StaffUser;
+GO
+-----------------------------------------------------
+--tạo user Kiểm toán bảo mật
+USE master;
+CREATE LOGIN KiemToanBaoMat WITH PASSWORD = 'Password123';
+GO
+USE QLCuaHangNike;
+CREATE USER KiemToanBaoMat FOR LOGIN KiemToanBaoMat;
+
+-- Cấp quyền SELECT trên toàn bộ Database
+GRANT SELECT TO KiemToanBaoMat;
+
+-- Đảm bảo không thể can thiệp dữ liệu bằng DENY các quyền ghi
+DENY INSERT, UPDATE, DELETE TO KiemToanBaoMat;
+GO
+
+
+---------------------------------------------------------------------------------------
+-- tạo user cho khách hàng
+USE master;
+CREATE LOGIN GuestUser WITH PASSWORD = 'Password123';
+GO
+USE QLCuaHangNike;
+CREATE USER GuestUser FOR LOGIN GuestUser;
+
+-- Chỉ cho phép xem sản phẩm và đánh giá
+GRANT SELECT ON SANPHAM TO GuestUser;
+GRANT SELECT ON DANHGIASANPHAM TO GuestUser;
+
+-- Cấm xem các thông tin kinh doanh nội bộ (Hóa đơn, Phiếu nhập, Nhà cung cấp)
+DENY SELECT ON HOADON TO GuestUser;
+DENY SELECT ON PHIEUNHAP TO GuestUser;
+DENY SELECT ON NHACUNGCAP TO GuestUser;
+GO
